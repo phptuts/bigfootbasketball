@@ -3,11 +3,16 @@ var StateMain={
    preload:function()
     {
         game.load.image('background','images/forest.png');
+        game.load.image('bigfoot', 'images/bigfoot21x32_forward.png');
     },
     
     create:function()
     {
-        game.add.image(0,0,'background');
+        backgroundImage = game.add.image(-30,0,'background');
+        backgroundImage.width = game.width + 30;
+        backgroundImage.height = game.height;
+
+
     },
     
     update:function()
