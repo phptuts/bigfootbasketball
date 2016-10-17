@@ -1,10 +1,12 @@
+var bigFootSprite;
+
 var StateMain={    
     
    preload:function()
     {
         game.load.image('background','images/forest.png');
-        game.load.image('bigfoot', 'images/bigfoot21x32_forward.png');
-    },
+        game.load.atlasXML('bigfoot', 'images/Yeti.png', 'xml/yeti.xml');   
+     },
     
     create:function()
     {
@@ -12,6 +14,10 @@ var StateMain={
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
 
+        bigFootSprite = game.add.sprite(100, 100, 'bigfoot');
+        bigFootSprite.scale.setTo(2, 2);
+        var walk = bigFootSprite.animations.add('walk');
+        bigFootSprite.animations.play('walk', 6, true);
 
     },
     
