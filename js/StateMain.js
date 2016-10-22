@@ -54,19 +54,21 @@ var StateMain={
     
     update:function()
     {     
-            game.physics.arcade.collide(basketball, hoop);
-  
+        game.physics.arcade.collide(basketball, hoop);
         this.controls();
     },
 
     hitBasketBall: function(basketball, hoop) {
-        console.log(basketball);
-        console.log(hoop);
+        if (basketball.y < hoop.y) {
+            basketball.x = 30;
+            basketball.y = 150;
+            basketball.body.velocity.x = -10;
+        }
     }, 
 
     controls: function() 
     {
-        if (basketball.y > 420) {
+        if (basketball.y > 420) { 
             shootingBall = false;
         }
 
