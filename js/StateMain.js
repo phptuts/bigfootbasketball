@@ -1,4 +1,4 @@
-var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, score = 0, camera;
+var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, score = 0, camera, cameraDirection = 'down', scoreText;
 
 var StateMain={    
     
@@ -20,6 +20,11 @@ var StateMain={
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
 
+            var style = { font: "35px Arial", fill: "#d17034", align: "center" };
+
+         var titleText = game.add.text(game.world.centerX, game.world.centerY-200, "Score", style);
+            titleText.anchor.setTo(.5,.5);
+         scoreText = game.add.text(game.world.centerX, game.world.centerY-170, "0", style);
 
         bigFootSprite = game.add.sprite(300, 500, 'bigfoot');
         bigFootSprite.scale.setTo(2, 2);
@@ -53,6 +58,7 @@ var StateMain={
         basketball.body.onCollide.add(this.hitBasketBall, this);
         camera.body.immovable = true;
         hoop.body.immovable = true;
+        game.time.events.loop(Phaser.Timer.SECOND * .0002, this.moveCamera, this);
 
     },
     
@@ -70,6 +76,7 @@ var StateMain={
                 basketball.y = 150;
                 basketball.body.velocity.x = -10;
                 score += 1;
+                scoreText.setText(score);
             }
             console.log("SCORE = " + score);
             shootingBall = false;
@@ -113,15 +120,28 @@ var StateMain={
 
         if (spaceKey.downDuration(4000) && !shootingBall) {
             shootingBall = true;
-            basketball.body.velocity.x = ((direction === 'right') ?  1 : -1 ) * 300;
+            basketball.body.velocity.x = ((direction === 'right') ?  1 : -1 ) * 450;
             basketball.body.bounce.setTo(.4);
             basketball.body.gravity.y = 400;
-            basketball.body.velocity.y = -500;
+            basketball.body.velocity.y = -650;
         }
 
         if (!shootingBall) {
             this.ballBackToBigFoot();
         }
+    },
+
+    moveCamera: function() {
+        if (camera.y === 150) {
+            cameraDirection = 'up';
+        }
+
+        if (camera.y === 50) {
+            cameraDirection = 'down';
+        }
+
+        camera.y +=  (cameraDirection === 'up') ? -1 : 1;
+
     },
 
     ballBackToBigFoot: function() {
