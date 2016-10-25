@@ -1,9 +1,32 @@
 var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, score = 0, camera, cameraDirection = 'down', scoreText;
+WebFontConfig = {
 
-var StateMain={    
+    //  'active' means all requested fonts have finished loading
+    //  We set a 1 second delay before calling 'createText'.
+    //  For some reason if we don't the browser cannot render the text the first time it's created.
+    active: function() { game.time.events.add(Phaser.Timer.SECOND, StateMain.createText, StateMain); },
+
+    //  The Google Fonts we want to load (specify as many as you like in the array)
+    google: {
+      families: ['Chewy']
+    }
+
+};
+var StateMain={ 
+
+   createText: function() {
+        var style = { fontSize: "40px", fill: "#9b2400", align: "center"};
+        var titleText = game.add.text(game.world.centerX, game.world.centerY-200, "Score", style);
+        titleText.anchor.setTo(.5,.5);
+        titleText.font = 'Chewy';
+        scoreText = game.add.text(game.world.centerX, game.world.centerY-160, "0", style);
+        scoreText.anchor.setTo(.5, .5);
+        scoreText.font = 'Chewy';
+   }, 
     
    preload:function()
     {
+        game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
         game.load.image('background','images/forest.png');
         game.load.image('basketball', 'images/basketball.png');
         game.load.atlas('bigfoot', 'images/bigfoot.png', 'json/bigfoot.json');   
@@ -16,25 +39,24 @@ var StateMain={
     {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         backgroundImage = game.add.image(-30,0,'background');
-        
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
 
-            var style = { font: "35px Arial", fill: "#d17034", align: "center" };
-
-         var titleText = game.add.text(game.world.centerX, game.world.centerY-200, "Score", style);
-            titleText.anchor.setTo(.5,.5);
-         scoreText = game.add.text(game.world.centerX, game.world.centerY-170, "0", style);
+        var bigFootBounds = new Phaser.Rectangle(100, 0, game.world.width - 100, game.world.height);
+        var graphics = game.add.graphics(bigFootBounds.x, bigFootBounds.y);
+        graphics.beginFill(0x000077);
+        graphics.drawRect(0, 0, bigFootBounds.width, bigFootBounds.height);
 
         bigFootSprite = game.add.sprite(300, 500, 'bigfoot');
         bigFootSprite.scale.setTo(2, 2);
         bigFootSprite.anchor.setTo(.5, .5);
+        bigFootSprite.inputEnabled = true;
+        bigFootSprite.input.boundsSprite = bigFootBounds;
         bigFootSprite.animations.add('walk', Phaser.Animation.generateFrameNames('bigfoot', 21, 26), 5, true);
-
         basketball = game.add.sprite(100, 100, 'basketball');
         basketball.scale.setTo(.2, .2);
         cursors = game.input.keyboard.createCursorKeys();
-        camera = game.add.sprite(100, 100, 'camera');
+        camera = game.add.sprite(110, 100, 'camera');
         camera.name = 'camera';
 
         game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
@@ -75,17 +97,13 @@ var StateMain={
                 basketball.x = 30;
                 basketball.y = 150;
                 basketball.body.velocity.x = -10;
-                score += 1;
+                score += 2;
                 scoreText.setText(score);
             }
-            console.log("SCORE = " + score);
             shootingBall = false;
             game.time.events.add(Phaser.Timer.SECOND * .3, this.ballBackToBigFoot, this).autoDestroy = true;
 
         }
-        
-
-        
     }, 
 
     controls: function() 
@@ -132,15 +150,15 @@ var StateMain={
     },
 
     moveCamera: function() {
-        if (camera.y === 150) {
+        if (camera.y > 150) {
             cameraDirection = 'up';
         }
 
-        if (camera.y === 50) {
+        if (camera.y < 20) {
             cameraDirection = 'down';
         }
 
-        camera.y +=  (cameraDirection === 'up') ? -1 : 1;
+        camera.y +=  (cameraDirection === 'up') ? -2 : 2;
 
     },
 
