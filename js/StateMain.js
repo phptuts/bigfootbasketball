@@ -1,4 +1,5 @@
-var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, score = 0, camera, cameraDirection = 'down', scoreText;
+var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, 
+score = 0, camera, cameraDirection = 'down', scoreText, timerText = 0, seconds = 120;
 WebFontConfig = {
 
     //  'active' means all requested fonts have finished loading
@@ -22,6 +23,16 @@ var StateMain={
         scoreText = game.add.text(game.world.centerX, game.world.centerY-160, "0", style);
         scoreText.anchor.setTo(.5, .5);
         scoreText.font = 'Chewy';
+        timerText = game.add.text(20, 300, "Time: " + seconds , style);
+        timerText.font = 'Chewy';
+        game.time.events.loop(Phaser.Timer.SECOND , function() {
+            seconds -= 1;
+            timerText.setText("Time: " + seconds);
+            if (seconds < 0) {
+                game.state.start("StateMain");
+            }
+        }, this);
+
    }, 
     
    preload:function()
@@ -42,16 +53,10 @@ var StateMain={
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
 
-        var bigFootBounds = new Phaser.Rectangle(100, 0, game.world.width - 100, game.world.height);
-        var graphics = game.add.graphics(bigFootBounds.x, bigFootBounds.y);
-        graphics.beginFill(0x000077);
-        graphics.drawRect(0, 0, bigFootBounds.width, bigFootBounds.height);
 
         bigFootSprite = game.add.sprite(300, 500, 'bigfoot');
         bigFootSprite.scale.setTo(2, 2);
         bigFootSprite.anchor.setTo(.5, .5);
-        bigFootSprite.inputEnabled = true;
-        bigFootSprite.input.boundsSprite = bigFootBounds;
         bigFootSprite.animations.add('walk', Phaser.Animation.generateFrameNames('bigfoot', 21, 26), 5, true);
         basketball = game.add.sprite(100, 100, 'basketball');
         basketball.scale.setTo(.2, .2);
@@ -80,8 +85,13 @@ var StateMain={
         basketball.body.onCollide.add(this.hitBasketBall, this);
         camera.body.immovable = true;
         hoop.body.immovable = true;
-        game.time.events.loop(Phaser.Timer.SECOND * .0002, this.moveCamera, this);
+        this.loops();
+    },
 
+    loops: function() {
+
+        
+        game.time.events.loop(Phaser.Timer.SECOND * .0002, this.moveCamera, this);
     },
     
     update:function()
@@ -97,7 +107,7 @@ var StateMain={
                 basketball.x = 30;
                 basketball.y = 150;
                 basketball.body.velocity.x = -10;
-                score += 2;
+                score += bigFootSprite.x > 500 ? 3 : 2;
                 scoreText.setText(score);
             }
             shootingBall = false;
@@ -119,7 +129,13 @@ var StateMain={
             direction = 'right';
         }
 
-        if (cursors.left.isDown) {
+        if (bigFootSprite.x < 250) {
+            bigFootSprite.body.velocity.x = 0;
+            bigFootSprite.animations.stop();
+            bigFootSprite.x = 250;
+        }
+
+        if (cursors.left.isDown && bigFootSprite.x > 250) {
             bigFootSprite.scale.setTo(-2, 2);
             bigFootSprite.body.velocity.x = -200;
             bigFootSprite.animations.play('walk');
