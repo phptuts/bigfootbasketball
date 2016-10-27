@@ -1,5 +1,7 @@
 var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, 
-score = 0, camera, cameraDirection = 'down', scoreText, timerText = 0, seconds = 120;
+score = 0, camera, cameraDirection = 'down', 
+scoreText, timerText = 0, seconds = 120, canStartGame = false, inProgress = false;
+
 WebFontConfig = {
 
     //  'active' means all requested fonts have finished loading
@@ -25,13 +27,7 @@ var StateMain={
         scoreText.font = 'Chewy';
         timerText = game.add.text(20, 300, "Time: " + seconds , style);
         timerText.font = 'Chewy';
-        game.time.events.loop(Phaser.Timer.SECOND , function() {
-            seconds -= 1;
-            timerText.setText("Time: " + seconds);
-            if (seconds < 0) {
-                game.state.start("StateMain");
-            }
-        }, this);
+        canStartGame = true;
 
    }, 
     
@@ -48,33 +44,32 @@ var StateMain={
     
     create:function()
     {
-        game.physics.startSystem(Phaser.Physics.ARCADE);
         backgroundImage = game.add.image(-30,0,'background');
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
-
 
         bigFootSprite = game.add.sprite(300, 500, 'bigfoot');
         bigFootSprite.scale.setTo(2, 2);
         bigFootSprite.anchor.setTo(.5, .5);
         bigFootSprite.animations.add('walk', Phaser.Animation.generateFrameNames('bigfoot', 21, 26), 5, true);
+        
         basketball = game.add.sprite(100, 100, 'basketball');
         basketball.scale.setTo(.2, .2);
-        cursors = game.input.keyboard.createCursorKeys();
+        
         camera = game.add.sprite(110, 100, 'camera');
         camera.name = 'camera';
 
-        game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
-	    spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        
         hoop = game.add.sprite(60, 180, 'hoop');
         hoop.name = 'hoop';
         hoop.scale.setTo(.2, .2);
         hoop.anchor.setTo(.5, .5);
 
         backhoop = game.add.sprite(0, 70, 'back-hoop');
-
+        
+        game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.enable([bigFootSprite, basketball, hoop, backhoop, camera], Phaser.Physics.ARCADE);
+        
+        // Set Physics for sprites
         bigFootSprite.body.collideWorldBounds=true;
         basketball.body.collideWorldBounds = true;
         camera.body.collideWorldBounds = true;
@@ -85,36 +80,36 @@ var StateMain={
         basketball.body.onCollide.add(this.hitBasketBall, this);
         camera.body.immovable = true;
         hoop.body.immovable = true;
-        this.loops();
+        
+        // Controls
+        game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+	    spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        cursors = game.input.keyboard.createCursorKeys();
+        
     },
 
     loops: function() {
 
-        
+        game.time.events.loop(Phaser.Timer.SECOND , function() {
+            seconds -= 1;
+            timerText.setText("Time: " + seconds);
+            if (seconds < 0) {
+                game.state.start("StateMain");
+            }
+        }, this);
         game.time.events.loop(Phaser.Timer.SECOND * .0002, this.moveCamera, this);
+        inProgress = true;
     },
     
     update:function()
     {     
+        if (canStartGame && !inProgress) {
+            this.loops();
+        }
         game.physics.arcade.collide(basketball, hoop);
         game.physics.arcade.collide(basketball, camera);
         this.controls();
     },
-
-    hitBasketBall: function(basketball, object) {
-        if (object.name == 'hoop') {
-            if (basketball.y + basketball.height + 30 < object.y && basketball.x < 40 ) {
-                basketball.x = 30;
-                basketball.y = 150;
-                basketball.body.velocity.x = -10;
-                score += bigFootSprite.x > 500 ? 3 : 2;
-                scoreText.setText(score);
-            }
-            shootingBall = false;
-            game.time.events.add(Phaser.Timer.SECOND * .3, this.ballBackToBigFoot, this).autoDestroy = true;
-
-        }
-    }, 
 
     controls: function() 
     {
@@ -146,8 +141,8 @@ var StateMain={
             bigFootSprite.body.velocity.x = 0;
             bigFootSprite.animations.stop();
         }
-
-        if (cursors.up.isDown) {
+        
+        if (cursors.up.isDown && bigFootSprite.y > 300) {
             bigFootSprite.body.velocity.y = -500;
             bigFootSprite.animations.stop();
         }
@@ -165,6 +160,32 @@ var StateMain={
         }
     },
 
+    hitBasketBall: function(basketball, object) {
+        if (object.name == 'hoop') {
+            if (basketball.y + basketball.height + 30 < object.y && basketball.x < 40 ) {
+                basketball.x = 30;
+                basketball.y = 150;
+                basketball.body.velocity.x = -10;
+                score += bigFootSprite.x > 500 ? 3 : 2;
+                scoreText.setText(score);
+            }
+            shootingBall = false;
+            game.time.events.add(Phaser.Timer.SECOND * .3, this.ballBackToBigFoot, this).autoDestroy = true;
+        }
+    }, 
+
+    ballBackToBigFoot: function() {
+            var ballXPixels = (direction === 'right') ? 20 : -60;
+            basketball.body.velocity.x = 0;
+            basketball.body.bounce.setTo(0);
+            basketball.body.gravity.y = 0;
+            basketball.body.velocity.y = 0;
+            basketball.x = bigFootSprite.x + ballXPixels;
+            basketball.y = bigFootSprite.y - 20;
+            shootingBall = false;
+    },    
+
+
     moveCamera: function() {
         if (camera.y > 150) {
             cameraDirection = 'up';
@@ -178,15 +199,5 @@ var StateMain={
 
     },
 
-    ballBackToBigFoot: function() {
-            var ballXPixels = (direction === 'right') ? 20 : -60;
-            basketball.body.velocity.x = 0;
-            basketball.body.bounce.setTo(0);
-            basketball.body.gravity.y = 0;
-            basketball.body.velocity.y = 0;
-            basketball.x = bigFootSprite.x + ballXPixels;
-            basketball.y = bigFootSprite.y - 20;
-            shootingBall = false;
-    }    
     
 }
