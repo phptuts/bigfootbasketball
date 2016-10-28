@@ -2,22 +2,23 @@ var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall,
 score = 0, camera, cameraDirection = 'down', 
 scoreText, timerText = 0, seconds = 120, canStartGame = false, inProgress = false;
 
-WebFontConfig = {
 
-    //  'active' means all requested fonts have finished loading
-    //  We set a 1 second delay before calling 'createText'.
-    //  For some reason if we don't the browser cannot render the text the first time it's created.
-    active: function() { game.time.events.add(Phaser.Timer.SECOND, StateMain.createText, StateMain); },
-
-    //  The Google Fonts we want to load (specify as many as you like in the array)
-    google: {
-      families: ['Chewy']
-    }
-
-};
 var StateMain={ 
 
-   createText: function() {
+
+    
+   preload:function()
+    {
+        game.load.image('background','images/forest.png');
+        game.load.image('basketball', 'images/basketball.png');
+        game.load.atlas('bigfoot', 'images/bigfoot.png', 'json/bigfoot.json');   
+        game.load.image('hoop', 'images/hoop.png');
+        game.load.image('back-hoop', 'images/backhoop.png');
+        game.load.image('camera', 'images/camera.png');
+     },
+    
+    create:function()
+    {
         var style = { fontSize: "40px", fill: "#9b2400", align: "center"};
         var titleText = game.add.text(game.world.centerX, game.world.centerY-200, "Score", style);
         titleText.anchor.setTo(.5,.5);
@@ -29,21 +30,6 @@ var StateMain={
         timerText.font = 'Chewy';
         canStartGame = true;
 
-   }, 
-    
-   preload:function()
-    {
-        game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
-        game.load.image('background','images/forest.png');
-        game.load.image('basketball', 'images/basketball.png');
-        game.load.atlas('bigfoot', 'images/bigfoot.png', 'json/bigfoot.json');   
-        game.load.image('hoop', 'images/hoop.png');
-        game.load.image('back-hoop', 'images/backhoop.png');
-        game.load.image('camera', 'images/camera.png');
-     },
-    
-    create:function()
-    {
         backgroundImage = game.add.image(-30,0,'background');
         backgroundImage.width = game.width + 30;
         backgroundImage.height = game.height;
