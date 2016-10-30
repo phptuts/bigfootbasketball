@@ -1,5 +1,5 @@
 var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, 
-score = 0, camera, cameraDirection = 'down',  direction = 'right',
+score = -1, camera, cameraDirection = 'down',  direction = 'right',
 scoreText, timerText = 0, seconds = 60;
 
 
