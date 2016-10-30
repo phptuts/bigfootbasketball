@@ -1,12 +1,10 @@
 var bigFootSprite, cursors, direction, hoop, spaceKey, shootingBall, 
-score = 0, camera, cameraDirection = 'down', 
-scoreText, timerText = 0, seconds = 120, canStartGame = false, inProgress = false;
+score = 0, camera, cameraDirection = 'down',  direction = 'right',
+scoreText, timerText = 0, seconds = 60;
 
 
 var StateMain={ 
 
-
-    
    preload:function()
     {
         game.load.image('background','images/forest.png');
@@ -19,6 +17,10 @@ var StateMain={
     
     create:function()
     {
+        backgroundImage = game.add.image(-30,0,'background');
+        backgroundImage.width = game.width + 30;
+        backgroundImage.height = game.height;
+
         var style = { fontSize: "40px", fill: "#9b2400", align: "center"};
         var titleText = game.add.text(game.world.centerX, game.world.centerY-200, "Score", style);
         titleText.anchor.setTo(.5,.5);
@@ -28,11 +30,6 @@ var StateMain={
         scoreText.font = 'Chewy';
         timerText = game.add.text(20, 300, "Time: " + seconds , style);
         timerText.font = 'Chewy';
-        canStartGame = true;
-
-        backgroundImage = game.add.image(-30,0,'background');
-        backgroundImage.width = game.width + 30;
-        backgroundImage.height = game.height;
 
         bigFootSprite = game.add.sprite(300, 500, 'bigfoot');
         bigFootSprite.scale.setTo(2, 2);
@@ -71,7 +68,7 @@ var StateMain={
         game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
 	    spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         cursors = game.input.keyboard.createCursorKeys();
-        
+        this.loops();
     },
 
     loops: function() {
@@ -80,7 +77,8 @@ var StateMain={
             seconds -= 1;
             timerText.setText("Time: " + seconds);
             if (seconds < 0) {
-                game.state.start("StateMain");
+                game.state.start("StateTitle");
+                seconds = 60;
             }
         }, this);
         game.time.events.loop(Phaser.Timer.SECOND * .0002, this.moveCamera, this);
@@ -89,9 +87,7 @@ var StateMain={
     
     update:function()
     {     
-        if (canStartGame && !inProgress) {
-            this.loops();
-        }
+        
         game.physics.arcade.collide(basketball, hoop);
         game.physics.arcade.collide(basketball, camera);
         this.controls();
