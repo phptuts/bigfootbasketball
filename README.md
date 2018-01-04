@@ -1,2 +1,2 @@
 # bigfootbasketball
-A phaser js game where both players play horse.  Each are bigfoot.
+A bigfoot basket ball game made with phase js.
